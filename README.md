@@ -28,13 +28,15 @@ The bot can be configured by adding a `.mention-bot` file to the base directory 
   "alwaysNotifyForPaths": [
     {
       "name": "ghuser", // The user's Github username
-      "files": ["src/js/**/*.js"] // The array of file globs associated with the user
+      "files": ["src/js/**/*.js"], // The array of file globs associated with the user
+      "skipTeamPrs": false // mention-bot will exclude the creator's own team from mentions
     }
   ], // users will always be mentioned based on file glob
   "fallbackNotifyForPaths": [
     {
       "name": "ghuser", // The user's Github username
-      "files": ["src/js/**/*.js"] // The array of file globs associated with the user
+      "files": ["src/js/**/*.js"], // The array of file globs associated with the user
+      "skipTeamPrs": false // mention-bot will exclude the creator's own team from mentions
     }
   ], // users will be mentioned based on file glob if no other user was found
   "findPotentialReviewers": true, // mention-bot will try to find potential reviewers based on files history, if disabled, `alwaysNotifyForPaths` is used instead
@@ -42,10 +44,28 @@ The bot can be configured by adding a `.mention-bot` file to the base directory 
   "userBlacklist": [], // users in this list will never be mentioned by mention-bot
   "userBlacklistForPR": [], // PR made by users in this list will be ignored
   "requiredOrgs": [], // mention-bot will only mention user who are a member of one of these organizations
-  "actions": ["opened"] // List of PR actions that mention-bot will listen to, default is "opened"
+  "actions": ["opened"], // List of PR actions that mention-bot will listen to, default is "opened"
+  "skipAlreadyAssignedPR": false, // mention-bot will ignore already assigned PR's
+  "skipAlreadyMentionedPR": false, // mention-bot will ignore if there is already existing an exact mention
+  "assignToReviewer": false, // mention-bot assigns the most appropriate reviewer for PR
+  "skipTitle": "", // mention-bot will ignore PR that includes text in the title,
+  "withLabel": "", // mention-bot will only consider PR's with this label. Must set actions to ["labeled"].
+  "delayed": false, // mention-bot will wait to comment until specified time in `delayedUntil` value
+  "delayedUntil": "3d", // Used if delayed is equal true, permitted values are: minutes, hours, or days, e.g.: '3 days', '40 minutes', '1 hour', '3d', '1h', '10m'
+  "skipCollaboratorPR": false, // mention-bot will ignore if PR is made by collaborator
 }
 ```
 
+The glob matching is an extended form of glob syntax performed by [`minimatch`](https://github.com/isaacs/minimatch), with the default options; read [the `minimatch` README](https://github.com/isaacs/minimatch/blob/master/README.md) for more details.
+
+**Note:** The `.mention-bot` file must be valid JSON.
+
+The default config can be overridden via environment config. e.g.:
+
+```zsh
+MENTION_BOT_CONFIG={"maxReviewers":1,"delayed":true}
+```
+---
 
 ## How Does It Work?
 
@@ -120,7 +140,7 @@ docker run -e GITHUB_USER="a" -p 5000:5000  mention-bot
 
 ## Configuring a custom message
 
-If you want to change the default message, you can write your custom logic in [message.js](https://github.com/facebook/mention-bot/blob/master/message.js).
+If you want to change the default message, you can write your custom logic in [message.js](https://github.com/facebook/mention-bot/blob/master/message.js), or add 'message' in the [.mention-bot configuration](#configuration) file.
 
 ## How to run the bot on GitHub Enterprise
 
@@ -147,7 +167,7 @@ If you use `http` protocol, the config section like this:
 
 ## Programmatic API
 
-When you require `mention-bot` you will get all the functions exposed by `mention-bot.js` module. You are expected to manage your own server and also connection to the github repository.
+When you require `mention-bot` you will get all the functions exposed by [`mention-bot.js`](https://github.com/facebook/mention-bot/blob/master/mention-bot.js) module. You are expected to manage your own server and also connection to the github repository.
 
 ```
 npm install mention-bot github
